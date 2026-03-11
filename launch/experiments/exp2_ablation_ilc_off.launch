@@ -1,0 +1,38 @@
+<launch>
+  <!-- Experiment 2: ILC Ablation - ILC OFF (Racetrack, 10 laps) -->
+  <arg name="gazebo_world_name" default="tiles_large" />
+  <arg name="wheel_friction" default="0.10" />
+  <arg name="ilc_config" default="$(env HOME)/planner_code/mppi_swerve_drive_ros_ex/launch/experiments/config/ilc_disabled.yaml" />
+  <arg name="straight_length" default="20.0" />
+  <arg name="radius" default="3.0" />
+  <arg name="local_planner" default="mppi_ilc_prior" />
+  <arg name="workspace" default="$(env HOME)/planner_code/mppi_swerve_drive_ros" />
+  <arg name="enable_eval_logging" default="true" />
+  <arg name="eval_log_dir" default="$(env HOME)/log/experiments" />
+  <arg name="eval_log_tag" default="exp2_ablation_ilc_off" />
+
+  <param name="/run_id" value="$(arg eval_log_tag)" />
+  <param name="/mppi_ilc_prior/metrics/log_dir" value="$(arg eval_log_dir)" />
+  <param name="/mppi_ilc_prior/metrics/log_tag" value="$(arg eval_log_tag)" />
+
+  <!-- Launch Navigation -->
+  <include file="$(arg workspace)/launch/navigation.launch">
+    <arg name="gazebo_world_name" value="$(arg gazebo_world_name)" />
+    <arg name="wheel_friction" value="$(arg wheel_friction)" />
+    <arg name="local_planner" value="$(arg local_planner)" />
+    <arg name="ilc_config" value="$(arg ilc_config)" />
+    <arg name="initial_pose_x" value="0.0" />
+    <arg name="initial_pose_y" value="0.0" />
+    <arg name="initial_pose_yaw" value="0.0" />
+    <arg name="use_amcl" value="false" />
+    <arg name="enable_eval_logging" value="$(arg enable_eval_logging)" />
+    <arg name="eval_log_dir" value="$(arg eval_log_dir)" />
+    <arg name="eval_log_tag" value="exp2_ablation_ilc_off" />
+  </include>
+
+  <!-- Publish Racetrack Path -->
+  <node pkg="mppi_h_square_test" type="publish_racetrack_path.py" name="racetrack_path_publisher" output="screen">
+    <param name="straight_length" value="$(arg straight_length)" />
+    <param name="radius" value="$(arg radius)" />
+  </node>
+</launch>

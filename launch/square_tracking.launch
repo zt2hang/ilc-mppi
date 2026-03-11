@@ -1,0 +1,38 @@
+<launch>
+  <!-- Arguments -->
+  <arg name="gazebo_world_name" default="tiles_large" />
+  <arg name="wheel_friction" default="0.10" />
+  <arg name="ilc_config" default="$(find mppi_ilc_prior)/config/mppi_ilc_prior.yaml" />
+  <arg name="side_length" default="20.0" />
+  <arg name="turn_radius" default="0.2" />
+  <arg name="local_planner" default="mppi_hc" /> <!-- mppi_h, mppi_hc, mppi_ilc -->
+  <arg name="workspace" default="$(env HOME)/planner_code/mppi_swerve_drive_ros" />
+  <arg name="enable_eval_logging" default="true" />
+  <arg name="eval_log_dir" default="$(env HOME)/log" />
+
+  <!-- Calculate initial pose based on side_length -->
+  <!-- Start at (0, -side_length/2, 0) -->
+  <!-- Note: We cannot do math in launch file easily for args passed to other launch files unless we use eval -->
+  
+  <!-- Launch Navigation -->
+  <include file="$(arg workspace)/launch/navigation.launch">
+    <arg name="gazebo_world_name" value="$(arg gazebo_world_name)" />
+    <arg name="wheel_friction" value="$(arg wheel_friction)" />
+    <arg name="local_planner" value="$(arg local_planner)" />
+    <arg name="ilc_config" value="$(arg ilc_config)" />
+    <arg name="initial_pose_x" value="0.0" />
+    <arg name="initial_pose_y" value="0.0" />
+    <arg name="initial_pose_yaw" value="0.0" />
+    <arg name="use_amcl" value="false" />
+    <arg name="enable_eval_logging" value="$(arg enable_eval_logging)" />
+    <arg name="eval_log_dir" value="$(arg eval_log_dir)" />
+    <arg name="eval_log_tag" value="square__$(arg local_planner)" />
+  </include>
+
+  <!-- Publish Square Path -->
+  <node pkg="mppi_h_square_test" type="publish_square_path.py" name="square_path_publisher" output="screen">
+    <param name="side_length" value="$(arg side_length)" />
+    <param name="turn_radius" value="$(arg turn_radius)" />
+  </node>
+
+</launch>

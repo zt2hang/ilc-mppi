@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- MPPI-HC Controller Launch File -->
+    <!-- Hierarchical Compensated Model Predictive Path Integral -->
+
+    <!-- Arguments -->
+    <arg name="config_file" default="$(find mppi_hc)/config/mppi_hc.yaml"/>
+    <arg name="odom_topic" default="/groundtruth_odom"/>
+    <arg name="cmd_vel_topic" default="/cmd_vel"/>
+    <arg name="reference_path_topic" default="/move_base/NavfnROS/plan"/>
+
+    <!-- Quick ablation / tuning overrides (defaults match mppi_hc.yaml) -->
+    <arg name="enable_compensation" default="true" />
+    <arg name="compensation_gain" default="0.8" />
+    <arg name="learning_rate" default="0.01" />
+    <arg name="slip_factor_max" default="0.3" />
+
+    <arg name="feedback_k_lateral" default="1.5" />
+    <arg name="feedback_k_heading" default="0.5" />
+    <arg name="feedback_k_integral" default="0.2" />
+    
+    <!-- Costmap topics (match reference_costmap_generator output) -->
+    <arg name="collision_costmap_topic" default="/move_base/local_costmap/costmap"/>
+    <arg name="distance_error_map_topic" default="/distance_error_map"/>
+    <arg name="reference_yaw_map_topic" default="/ref_yaw_map"/>
+
+    <!-- MPPI-HC Node -->
+    <node pkg="mppi_hc" type="mppi_hc_node" name="mppi_hc_node" output="screen">
+        <!-- Load parameters from yaml -->
+        <rosparam file="$(arg config_file)" command="load"/>
+
+        <!-- Override selected params (useful for controlled comparisons) -->
+        <param name="slip/enable_compensation" value="$(arg enable_compensation)" />
+        <param name="slip/compensation_gain" value="$(arg compensation_gain)" />
+        <param name="slip/learning_rate" value="$(arg learning_rate)" />
+        <param name="slip/slip_factor_max" value="$(arg slip_factor_max)" />
+        <param name="feedback/k_lateral" value="$(arg feedback_k_lateral)" />
+        <param name="feedback/k_heading" value="$(arg feedback_k_heading)" />
+        <param name="feedback/k_integral" value="$(arg feedback_k_integral)" />
+        
+        <!-- Topic remapping -->
+        <remap from="odom" to="$(arg odom_topic)"/>
+        <remap from="cmd_vel" to="$(arg cmd_vel_topic)"/>
+        <remap from="reference_path" to="$(arg reference_path_topic)"/>
+        <remap from="collision_costmap" to="$(arg collision_costmap_topic)"/>
+        <remap from="distance_error_map" to="$(arg distance_error_map_topic)"/>
+        <remap from="reference_yaw_map" to="$(arg reference_yaw_map_topic)"/>
+    </node>
+
+</launch>

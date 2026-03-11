@@ -1,0 +1,64 @@
+<launch>
+  <!-- Experiment 4: Generalization across scenarios (parameterized) -->
+  <!-- Usage: roslaunch ... scenario:=circular|racetrack|figure8|square -->
+  <arg name="gazebo_world_name" default="tiles_large" />
+  <arg name="wheel_friction" default="0.10" />
+  <arg name="ilc_config" default="$(env HOME)/planner_code/mppi_swerve_drive_ros_ex/launch/experiments/config/ilc_enabled.yaml" />
+  <arg name="scenario" default="circular" />  <!-- circular|racetrack|figure8|square -->
+  <arg name="local_planner" default="mppi_ilc_prior" />
+  <arg name="workspace" default="$(env HOME)/planner_code/mppi_swerve_drive_ros" />
+  <arg name="enable_eval_logging" default="true" />
+  <arg name="eval_log_dir" default="$(env HOME)/log/experiments" />
+
+  <!-- Scenario-specific parameters -->
+  <arg name="radius" default="10.0" />
+  <arg name="straight_length" default="20.0" />
+  <arg name="turn_radius" default="3.0" />
+  <arg name="side_length" default="20.0" />
+
+  <param name="/run_id" value="exp4_gen_$(arg scenario)" />
+  <param name="/mppi_ilc_prior/metrics/log_dir" value="$(arg eval_log_dir)" />
+  <param name="/mppi_ilc_prior/metrics/log_tag" value="exp4_gen_$(arg scenario)" />
+
+  <!-- Launch Navigation -->
+  <include file="$(arg workspace)/launch/navigation.launch">
+    <arg name="gazebo_world_name" value="$(arg gazebo_world_name)" />
+    <arg name="wheel_friction" value="$(arg wheel_friction)" />
+    <arg name="local_planner" value="$(arg local_planner)" />
+    <arg name="ilc_config" value="$(arg ilc_config)" />
+    <arg name="initial_pose_x" value="0.0" />
+    <arg name="initial_pose_y" value="0.0" />
+    <arg name="initial_pose_yaw" value="0.0" />
+    <arg name="use_amcl" value="false" />
+    <arg name="enable_eval_logging" value="$(arg enable_eval_logging)" />
+    <arg name="eval_log_dir" value="$(arg eval_log_dir)" />
+    <arg name="eval_log_tag" value="exp4_gen_$(arg scenario)" />
+  </include>
+
+  <!-- Path publishers: only the matching scenario activates -->
+  <group if="$(eval scenario == 'circular')">
+    <node pkg="mppi_h_circular_test" type="publish_circular_path.py" name="path_publisher" output="screen">
+      <param name="radius" value="$(arg radius)" />
+    </node>
+  </group>
+
+  <group if="$(eval scenario == 'racetrack')">
+    <node pkg="mppi_h_square_test" type="publish_racetrack_path.py" name="path_publisher" output="screen">
+      <param name="straight_length" value="$(arg straight_length)" />
+      <param name="radius" value="$(arg turn_radius)" />
+    </node>
+  </group>
+
+  <group if="$(eval scenario == 'figure8')">
+    <node pkg="mppi_h_square_test" type="publish_figure8_path.py" name="path_publisher" output="screen">
+      <param name="radius" value="$(arg radius)" />
+    </node>
+  </group>
+
+  <group if="$(eval scenario == 'square')">
+    <node pkg="mppi_h_square_test" type="publish_square_path.py" name="path_publisher" output="screen">
+      <param name="side_length" value="$(arg side_length)" />
+      <param name="turn_radius" value="0.2" />
+    </node>
+  </group>
+</launch>

@@ -1,0 +1,36 @@
+<launch>
+  <!-- Experiment 3: Decay Factor Sweep (Circular, parameterized config) -->
+  <arg name="gazebo_world_name" default="tiles_large" />
+  <arg name="wheel_friction" default="0.3" />
+  <arg name="radius" default="10.0" />
+  <arg name="decay_config" />  <!-- REQUIRED: path to decay_XXXX.yaml -->
+  <arg name="local_planner" default="mppi_ilc_prior" />
+  <arg name="workspace" default="$(env HOME)/planner_code/mppi_swerve_drive_ros" />
+  <arg name="enable_eval_logging" default="true" />
+  <arg name="eval_log_dir" default="$(env HOME)/log/experiments" />
+  <arg name="eval_tag_suffix" default="decay" />
+
+  <param name="/run_id" value="exp3_$(arg eval_tag_suffix)" />
+  <param name="/mppi_ilc_prior/metrics/log_dir" value="$(arg eval_log_dir)" />
+  <param name="/mppi_ilc_prior/metrics/log_tag" value="exp3_$(arg eval_tag_suffix)" />
+
+  <!-- Launch Navigation -->
+  <include file="$(arg workspace)/launch/navigation.launch">
+    <arg name="gazebo_world_name" value="$(arg gazebo_world_name)" />
+    <arg name="wheel_friction" value="$(arg wheel_friction)" />
+    <arg name="local_planner" value="$(arg local_planner)" />
+    <arg name="ilc_config" value="$(arg decay_config)" />
+    <arg name="initial_pose_x" value="0.0" />
+    <arg name="initial_pose_y" value="0.0" />
+    <arg name="initial_pose_yaw" value="0.0" />
+    <arg name="use_amcl" value="false" />
+    <arg name="enable_eval_logging" value="$(arg enable_eval_logging)" />
+    <arg name="eval_log_dir" value="$(arg eval_log_dir)" />
+    <arg name="eval_log_tag" value="exp3_$(arg eval_tag_suffix)" />
+  </include>
+
+  <!-- Publish Circular Path -->
+  <node pkg="mppi_h_circular_test" type="publish_circular_path.py" name="circular_path_publisher" output="screen">
+    <param name="radius" value="$(arg radius)" />
+  </node>
+</launch>
